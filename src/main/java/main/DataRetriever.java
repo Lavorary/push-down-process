@@ -73,9 +73,9 @@ public class DataRetriever {
     return invoiceTotals;
     }
 
-    InvoiceStatusTotal computeStatusTotals() {
+    List<InvoiceStatusTotal> computeStatusTotals() {
         DBConnection dbConnection = new DBConnection();
-        InvoiceStatusTotal invoiceStatusTotal = new InvoiceStatusTotal();
+        List<InvoiceStatusTotal> invoiceStatusTotals = new ArrayList<>();
         try(Connection connection = dbConnection.getConnection()) {
             String query = """
                         select i.status, SUM(il.quantity * il.unit_price) as total
@@ -86,16 +86,16 @@ public class DataRetriever {
             PreparedStatement statement = connection.prepareStatement(query);
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
-
+                InvoiceStatusTotal invoiceStatusTotal = new InvoiceStatusTotal();
                 invoiceStatusTotal.setStatus(StatusEnum.valueOf(resultSet.getString("status")));
                 invoiceStatusTotal.setTotal(resultSet.getDouble("total"));
-                return invoiceStatusTotal;
+                invoiceStatusTotals.add(invoiceStatusTotal);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
 
-        return invoiceStatusTotal;
+        return invoiceStatusTotals;
     }
 }
