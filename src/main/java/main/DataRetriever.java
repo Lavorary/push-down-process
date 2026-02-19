@@ -98,4 +98,30 @@ public class DataRetriever {
 
         return invoiceStatusTotals;
     }
+    Double computeWeightedTurnover() {
+        DBConnection dbConnection = new DBConnection();
+        Double weightedTurnover = 0.0;
+        try(Connection connection = dbConnection.getConnection()){
+            String query = """
+                    select sum(case when i.status = 'PAID' THEN (il.quantity * il.unit_price)
+                                when i.status = 'CONFIRMED' THEN (il.quantity * il.unit_price) /2
+                                when i.status = 'DRAFT' THEN 0
+                                end) as total
+                    from invoice i
+                    join invoice_line il on i.id = il.invoice_id;
+                    """;
+            PreparedStatement statement = connection.prepareStatement(query);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                InvoiceStatusTotal invoiceStatusTotal = new InvoiceStatusTotal();
+                invoiceStatusTotal.setTotal(resultSet.getDouble("total"));
+                weightedTurnover = weightedTurnover + invoiceStatusTotal.getTotal();
+
+
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return weightedTurnover;
+    }
 }
