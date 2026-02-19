@@ -2,6 +2,7 @@ package main;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class DataRetriever {
@@ -75,8 +76,26 @@ public class DataRetriever {
     InvoiceStatusTotal computeStatusTotals() {
         DBConnection dbConnection = new DBConnection();
         InvoiceStatusTotal invoiceStatusTotal = new InvoiceStatusTotal();
+        try(Connection connection = dbConnection.getConnection()) {
+            String query = """
+                        select i.status, SUM(il.quantity * il.unit_price) as total
+                        from invoice i
+                        join invoice_line il on i.id = il.invoice_id
+                        group by i.status;
+                    """;
+            PreparedStatement statement = connection.prepareStatement(query);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
 
-        throw new RuntimeException("Not implemented yet");
+                invoiceStatusTotal.setStatus(StatusEnum.valueOf(resultSet.getString("status")));
+                invoiceStatusTotal.setTotal(resultSet.getDouble("total"));
+                return invoiceStatusTotal;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
+
+        return invoiceStatusTotal;
     }
 }

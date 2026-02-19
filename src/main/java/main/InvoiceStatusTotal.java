@@ -10,8 +10,6 @@ import lombok.*;
 @EqualsAndHashCode
 @Builder
 public class InvoiceStatusTotal {
-    private int id;
-    private String clientName;
     private StatusEnum status;
     private double total;
 
