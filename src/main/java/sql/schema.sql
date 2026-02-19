@@ -38,4 +38,7 @@ CREATE TABLE tax_config (
     rate NUMERIC(5,2) NOT NULL
 );
 
+INSERT INTO tax_config (label, rate) VALUES
+                                         ('TVA STANDAR', 20);
+
 
